@@ -1,7 +1,7 @@
 import { db } from "@/database";
 import { tokens } from "@/database/tokens";
 import { createHash } from "crypto";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 export enum LoginMode {
 	UserName = 1,
@@ -11,6 +11,7 @@ export interface LoginProp {
 	username: string;
 	password: string;
 }
+const defaultKey = "sucs";
 @SFSideOnly("server")
 export class LoginService {
 	passwordV1(password: string, salt: string) {
@@ -28,7 +29,7 @@ export class LoginService {
 		// 添加随机延迟，避免被探测密码比较的时间
 		await new Promise((r) => setTimeout(r, Math.random() * 200));
 		const success =
-			this.passwordV1(prop.password, p.s || "xxxxxx") === p?.password;
+			this.passwordV1(prop.password, p?.s || "xxxxxx") === p?.password;
 		return success
 			? {
 					success,
@@ -62,7 +63,7 @@ export class LoginService {
 
 			return {
 				success,
-				authToken: jwt.sign({ uid, username, authToken }, "sucs", {
+				authToken: jwt.sign({ uid, username, authToken }, defaultKey, {
 					expiresIn: "5m",
 				}),
 				refreshToken,
@@ -71,5 +72,44 @@ export class LoginService {
 		return {
 			success,
 		};
+	}
+	async checkToken(token: string, ip?: string) {
+		try {
+			const ret = jwt.verify(token, defaultKey, {
+				ignoreExpiration: true,
+			}) as JwtPayload;
+			if (ret.exp! < Date.now()) {
+				let { authToken } = ret;
+				const res = await db
+					.select("tokens")
+					.addSelect("uid", "ip")
+					.join("users")
+					.on("users.uid", "tokens.uid")
+					.addSelect("username")
+					.where("authToken", authToken)
+					.one();
+				if (!res) return null;
+				const { uid, username, ip: lastIP } = res;
+				if (ip && ip !== lastIP) {
+					console.log("ip变更，更新token");
+					const newToken = this.randomStr(tokens.columns.authToken.length);
+					await db
+						.update("tokens")
+						.set({ ip, authToken: newToken })
+						.where("authToken", authToken);
+					authToken = newToken;
+				}
+				return {
+					uid,
+					username,
+					newToken: jwt.sign({ uid, username, authToken }, defaultKey, {
+						expiresIn: "5m",
+					}),
+				};
+			}
+			return { uid: ret.uid, username: ret.username };
+		} catch {
+			return null;
+		}
 	}
 }

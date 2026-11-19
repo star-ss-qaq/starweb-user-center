@@ -12,7 +12,10 @@
 import { LoginMode } from "@/service/login.service";
 import { useRequest } from "@thestarweb/star-framework-app-web-vue";
 import { Button, Input, Select } from "@thestarweb/ui";
+import { stringifyCookie } from "cookie";
+import Cookies from "js-cookie";
 import { reactive, ref } from "vue";
+
 const data = reactive({ username: "", password: "", mode: LoginMode.UserName });
 const request = useRequest();
 const loading = ref(false);
@@ -27,6 +30,11 @@ async function handleLogin() {
 	loading.value = true;
 	try {
 		const res = await request.post("self:/login", { body: data });
+		if (res.success) {
+			Cookies.set("token", res.authToken);
+			localStorage.setItem("refreshToken", res.refreshToken);
+			history.pushState(null, "", "/home");
+		}
 	} finally {
 		loading.value = false;
 	}

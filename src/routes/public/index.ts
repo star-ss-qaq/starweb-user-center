@@ -1,3 +1,5 @@
+import { setCookie } from "@/interceptor/cookie.interceptor";
+import { Uid, User } from "@/interceptor/login.interceptor";
 import { LoginProp, LoginService } from "@/service/login.service";
 import {
 	Body,
@@ -14,7 +16,10 @@ export class PublicRoute {
 	@Inject()
 	loginService!: LoginService;
 	@Get("/")
-	index() {
+	index(@User() user?: any) {
+		if (user) {
+			return new LocationTo("/home");
+		}
 		return new LocationTo("/login");
 	}
 	@View("login", new VueRender(() => import("@/view/public/login.vue")))

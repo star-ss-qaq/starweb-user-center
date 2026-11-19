@@ -4,7 +4,7 @@ import { users } from "./users";
 import { tokens } from "./tokens";
 
 export const db = SFSideSwitch({
-	server: new SFDB(
+	server: await SFDB.create(
 		{
 			database: {
 				default: {
