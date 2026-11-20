@@ -9,4 +9,8 @@ export class HomeRoute {
 	index() {
 		//
 	}
+	@View("safe", new VueRender(() => import("@/view/home/safe.vue")))
+	safe() {
+		//
+	}
 }
