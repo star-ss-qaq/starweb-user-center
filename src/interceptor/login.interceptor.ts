@@ -15,13 +15,21 @@ export function RequireLogin(): ClassDecorator &
 		initMetadata(target, metaKey, key, []);
 	};
 }
+export interface LoginInfo {
+	username: string;
+	uid: string;
+}
 // @side-only server
 export function createLoginInterceptor(
 	loginService: LoginService,
 ): Interceptor {
 	return async (prop, next) => {
 		if (prop.context.cookie?.token) {
-			const user = await loginService.checkToken(prop.context.cookie.token);
+			const user = await loginService.checkToken(
+				prop.context.cookie.token,
+				prop.header["user-agent"],
+				prop.context.ip,
+			);
 			if (user) {
 				prop.context.user = user;
 				prop.context.uid = user.uid;
@@ -42,7 +50,9 @@ export function createLoginInterceptor(
 			}
 		});
 		if (shouldLogin && !prop.context.user) {
-			return new LocationTo("/login");
+			return new LocationTo(
+				`/login?from=${encodeURIComponent(prop.url.pathname + prop.url.search + prop.url.hash)}`,
+			);
 		}
 		return next(prop);
 	};

@@ -4,6 +4,8 @@ import { LoginProp, LoginService } from "@/service/login.service";
 import {
 	Body,
 	Get,
+	Header,
+	Ip,
 	LocationTo,
 	Post,
 	View,
@@ -27,7 +29,19 @@ export class PublicRoute {
 		//
 	}
 	@Post("login")
-	async login(@Body() prop: LoginProp) {
-		return await this.loginService.login(prop);
+	async login(
+		@Body() prop: Omit<LoginProp, "ip" | "ua">,
+		@Ip() ip: string,
+		@Header("user-agent") ua: string,
+	) {
+		return await this.loginService.login({ ...prop, ip, ua });
+	}
+	@Post("refreshToken")
+	async refreshToken(
+		@Body() token: string,
+		@Ip() ip: string,
+		@Header("user-agent") ua: string,
+	) {
+		return await this.loginService.refresh(token, ip, ua);
 	}
 }

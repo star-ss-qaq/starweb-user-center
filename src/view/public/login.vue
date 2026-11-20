@@ -9,12 +9,30 @@
 </template>
 
 <script setup lang="ts">
+import { authTokenKey, refreshTokenKey } from "@/const/keys";
+import { LoginInfo } from "@/interceptor/login.interceptor";
 import { LoginMode } from "@/service/login.service";
+import { parseJWT } from "@/utils/parse-jwt";
 import { useRequest } from "@thestarweb/star-framework-app-web-vue";
-import { Button, Input, Select } from "@thestarweb/ui";
-import { stringifyCookie } from "cookie";
+import { Button, Input } from "@thestarweb/ui";
 import Cookies from "js-cookie";
-import { reactive, ref } from "vue";
+import { inject, reactive, Ref, ref, watch } from "vue";
+
+const user = inject<Ref<LoginInfo>>("user");
+watch(
+	() => user,
+	() => {
+		if (user?.value) {
+			const to = new URL(location.href).searchParams.get("from") || "/home";
+			if (to.startsWith("/")) {
+				history.pushState(null, "", to);
+			} else {
+				location.href = to;
+			}
+		}
+	},
+	{ deep: true },
+);
 
 const data = reactive({ username: "", password: "", mode: LoginMode.UserName });
 const request = useRequest();
@@ -31,9 +49,9 @@ async function handleLogin() {
 	try {
 		const res = await request.post("self:/login", { body: data });
 		if (res.success) {
-			Cookies.set("token", res.authToken);
-			localStorage.setItem("refreshToken", res.refreshToken);
-			history.pushState(null, "", "/home");
+			Cookies.set(authTokenKey, res.authToken);
+			localStorage.setItem(refreshTokenKey, res.refreshToken);
+			user!.value = parseJWT(authTokenKey);
 		}
 	} finally {
 		loading.value = false;

@@ -10,6 +10,8 @@ export interface LoginProp {
 	mode: LoginMode;
 	username: string;
 	password: string;
+	ip: string;
+	ua: string;
 }
 const defaultKey = "sucs";
 @SFSideOnly("server")
@@ -38,7 +40,7 @@ export class LoginService {
 				}
 			: { success };
 	}
-	randomStr(length: number) {
+	private randomStr(length: number) {
 		const t = [Math.random().toString(36).substring(2)];
 		if (t[0].length < length) {
 			let times = Math.ceil(length / t[0].length) - 1;
@@ -47,25 +49,34 @@ export class LoginService {
 		}
 		return t.join("").substring(0, length);
 	}
+	private createAuthToken() {
+		return this.randomStr(tokens.columns.authToken.length);
+	}
+	private createRefreshToken() {
+		return this.randomStr(tokens.columns.refreshToken.length);
+	}
+	private createJWT(uid: number, username: string, authToken: string) {
+		return jwt.sign({ uid, username, authToken }, defaultKey, {
+			expiresIn: "5m",
+		});
+	}
 	async login(prop: LoginProp) {
 		const { uid, username, success } = await this.checkPassword(prop);
 		if (success) {
-			const authToken = this.randomStr(tokens.columns.authToken.length);
-			const refreshToken = this.randomStr(tokens.columns.refreshToken.length);
+			const authToken = this.createAuthToken();
+			const refreshToken = this.createRefreshToken();
 			await db.insert("tokens").data({
 				authToken,
 				refreshToken,
 				time: new Date(),
 				uid,
-				ua: "",
-				ip: "",
+				ua: prop.ua,
+				ip: prop.ip,
 			});
 
 			return {
 				success,
-				authToken: jwt.sign({ uid, username, authToken }, defaultKey, {
-					expiresIn: "5m",
-				}),
+				authToken: this.createJWT(uid, username, authToken),
 				refreshToken,
 			};
 		}
@@ -73,7 +84,7 @@ export class LoginService {
 			success,
 		};
 	}
-	async checkToken(token: string, ip?: string) {
+	async checkToken(token: string, ua: string, ip?: string) {
 		try {
 			const ret = jwt.verify(token, defaultKey, {
 				ignoreExpiration: true,
@@ -85,14 +96,15 @@ export class LoginService {
 					.addSelect("uid", "ip")
 					.join("users")
 					.on("users.uid", "tokens.uid")
-					.addSelect("username")
+					.addSelect("users.username")
 					.where("authToken", authToken)
+					.where("ua", ua)
 					.one();
 				if (!res) return null;
 				const { uid, username, ip: lastIP } = res;
 				if (ip && ip !== lastIP) {
 					console.log("ip变更，更新token");
-					const newToken = this.randomStr(tokens.columns.authToken.length);
+					const newToken = this.createAuthToken();
 					await db
 						.update("tokens")
 						.set({ ip, authToken: newToken })
@@ -102,14 +114,39 @@ export class LoginService {
 				return {
 					uid,
 					username,
-					newToken: jwt.sign({ uid, username, authToken }, defaultKey, {
-						expiresIn: "5m",
-					}),
+					newToken: this.createJWT(uid, username, authToken),
 				};
 			}
 			return { uid: ret.uid, username: ret.username };
 		} catch {
 			return null;
 		}
+	}
+	async refresh(oldRefreshToken: string, ip: string, ua: string) {
+		const res = await db
+			.select("tokens")
+			.addSelect("uid", "ip")
+			.join("users")
+			.on("users.uid", "tokens.uid")
+			.addSelect("users.username")
+			.where("refreshToken", oldRefreshToken)
+			.where("ua", ua)
+			.one();
+		if (res) {
+			const authToken = this.createAuthToken();
+			const refreshToken = this.createRefreshToken();
+			await db
+				.update("tokens")
+				.set({ authToken, refreshToken, ip })
+				.where("refreshToken", oldRefreshToken);
+			return {
+				success: true,
+				authToken: this.createJWT(res.uid, res.username, authToken),
+				refreshToken,
+			};
+		}
+		return {
+			success: false,
+		};
 	}
 }

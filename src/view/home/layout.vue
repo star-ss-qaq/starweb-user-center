@@ -1,6 +1,6 @@
 <template>
 	<Page :menu="menu">
-		<sf-route />
+		<!-- <sf-route /> -->
 	</Page>
 </template>
 <script setup lang="ts">
