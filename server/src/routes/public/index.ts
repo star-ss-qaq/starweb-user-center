@@ -1,5 +1,4 @@
-import { setCookie } from "@/interceptor/cookie.interceptor";
-import { Uid, User } from "@/interceptor/login.interceptor";
+import { LoginInfo, User } from "@/interceptor/login.interceptor";
 import { LoginProp, LoginService } from "@/service/login.service";
 import {
 	Body,
@@ -43,5 +42,18 @@ export class PublicRoute {
 		@Header("user-agent") ua: string,
 	) {
 		return await this.loginService.refresh(token, ip, ua);
+	}
+	@Post("check")
+	check(@User() user?: LoginInfo): LoginInfo {
+		return user!;
+	}
+
+	@View(
+		"/token-message",
+		new VueRender(() => import("@/view/token-message.vue")),
+	)
+	tokenMessage(@Header("referer") referer: string) {
+		const url = new URL(referer);
+		return { origin: url.origin };
 	}
 }

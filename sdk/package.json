@@ -1,0 +1,23 @@
+{
+	"name": "@thestarweb/star-web-user-center-sdk",
+	"version": "1.0.0-beta.2",
+	"description": "StarWeb user center sdk",
+	"main": "dist/index.js",
+	"types": "src/index.ts",
+	"type": "module",
+	"scripts": {
+		"dev": "tsc -w",
+		"build": "tsc"
+	},
+	"dependencies": {
+		"@thestarweb/star-framework-app-web": "^1.2.0",
+		"cookie": "^2.0.2",
+		"js-cookie": "^3.0.8"
+	},
+	"peerDependencies": {},
+	"devDependencies": {
+		"@types/node": "^26.0.1",
+		"typescript": "^7.0.2"
+	},
+	"license": "ISC"
+}

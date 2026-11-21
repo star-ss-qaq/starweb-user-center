@@ -10,9 +10,22 @@ const packageInfo = JSON.parse(readFileSync("./package.json", "utf8"));
 const version = packageInfo.version;
 
 export default defineConfig({
-	plugin: [SFWebPlugin(), SFWebVuePlugin()],
+	plugin: [
+		SFWebPlugin({
+			devServer: {
+				apiTypeNamespaceDefinePath: "../sdk/api.d.ts",
+			},
+		}),
+		SFWebVuePlugin(),
+	],
 	resolve: {
 		tsconfigPaths: true,
+		alias: {
+			"@thestarweb/star-web-user-center-sdk": join(
+				process.cwd(),
+				"../sdk/src/index.ts",
+			),
+		},
 	},
 	define: {
 		"process.env.VERSION": JSON.stringify(version),
