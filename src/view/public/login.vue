@@ -6,9 +6,13 @@
 		<Button theme="primary" @click="handleLogin">登录</Button>
 		<Button href="/register">注册</Button>
 	</div>
+	<footer>
+		<Version />
+	</footer>
 </template>
 
 <script setup lang="ts">
+import Version from "@/component/version.vue";
 import { authTokenKey, refreshTokenKey } from "@/const/keys";
 import { LoginInfo } from "@/interceptor/login.interceptor";
 import { LoginMode } from "@/service/login.service";
@@ -78,5 +82,11 @@ h1 {
 	display: flex;
 	flex-direction: row;
 	justify-content: space-around;
+}
+footer {
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	transform: translate(-50%, -100%);
 }
 </style>

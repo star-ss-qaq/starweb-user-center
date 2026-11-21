@@ -1,6 +1,6 @@
 {
 	"name": "@thestarweb/star-framework-template-web",
-	"version": "2.0.0-beta.5",
+	"version": "2.0.0-beta.1",
 	"description": "Star Node Framework template for web applications",
 	"main": "dist/index.js",
 	"private": true,
