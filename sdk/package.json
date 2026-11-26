@@ -1,6 +1,6 @@
 {
 	"name": "@thestarweb/star-web-user-center-sdk",
-	"version": "1.0.0-beta.2",
+	"version": "1.0.0-beta.4",
 	"description": "StarWeb user center sdk",
 	"main": "dist/index.js",
 	"types": "src/index.ts",

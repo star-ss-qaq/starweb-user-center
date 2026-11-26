@@ -13,6 +13,10 @@ declare module "@thestarweb/star-framework-app-web"{
 				},
 				return:any
 			},
+			"/register":{
+				prop:{},
+				return:any
+			},
 			"/token-message":{
 				prop:{
 					header?:{"referer": string,},

@@ -3,3 +3,4 @@ dist
 *.sqlite
 route-type.ts
 package-lock.json
+.env.local

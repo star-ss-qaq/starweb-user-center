@@ -1,7 +1,7 @@
 import {
 	Context,
 	getSfRequest,
-	LocationTo,
+	ResponseWithMeta,
 	type Interceptor,
 } from "@thestarweb/star-framework-app-web";
 import { getMetadata, initMetadata } from "@thestarweb/star-framework-utils";
@@ -17,7 +17,7 @@ export function RequireLogin(): ClassDecorator &
 }
 export interface LoginInfo {
 	username: string;
-	uid: string;
+	uid: number;
 }
 // @side-only server
 export function createLoginInterceptor(baseUrl: string): Interceptor {
@@ -31,7 +31,8 @@ export function createLoginInterceptor(baseUrl: string): Interceptor {
 				{
 					// @ts-ignore
 					header: {
-						cookie: stringifyCookie(cookie.token),
+						cookie: stringifyCookie({ token: cookie.token }),
+						"user-agent": prop.header["user-agent"],
 					},
 				},
 			);
@@ -52,12 +53,7 @@ export function createLoginInterceptor(baseUrl: string): Interceptor {
 			}
 		});
 		if (shouldLogin && !prop.context.user) {
-			return new LocationTo(
-				new URL(
-					`login?from=${encodeURIComponent(prop.url.pathname + prop.url.search + prop.url.hash)}`,
-					baseUrl,
-				).toString(),
-			);
+			return new ResponseWithMeta(null, { code: 401 });
 		}
 		return next(prop);
 	};

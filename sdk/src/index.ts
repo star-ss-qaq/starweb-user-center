@@ -1,2 +1,2 @@
-export * from "./login.interceptor";
-export * from "./web";
+export * from "./login.interceptor.js";
+export * from "./web.js";

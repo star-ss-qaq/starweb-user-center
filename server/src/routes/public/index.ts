@@ -10,6 +10,7 @@ import {
 	View,
 } from "@thestarweb/star-framework-app-web";
 import { VueRender } from "@thestarweb/star-framework-app-web-vue";
+import { Prefix } from "@thestarweb/star-framework-app-web/src/params";
 import { Inject } from "@thestarweb/star-framework-di";
 
 export class PublicRoute {
@@ -17,11 +18,11 @@ export class PublicRoute {
 	@Inject()
 	loginService!: LoginService;
 	@Get("/")
-	index(@User() user?: any) {
+	index(@Prefix() prefix: string, @User() user?: any) {
 		if (user) {
-			return new LocationTo("/home");
+			return new LocationTo(`${prefix}home`);
 		}
-		return new LocationTo("/login");
+		return new LocationTo(`${prefix}login`);
 	}
 	@View("login", new VueRender(() => import("@/view/public/login.vue")))
 	loginPage() {
@@ -35,6 +36,10 @@ export class PublicRoute {
 	) {
 		return await this.loginService.login({ ...prop, ip, ua });
 	}
+
+	@View("register", new VueRender(() => import("@/view/public/register.vue")))
+	register: undefined;
+
 	@Post("refreshToken")
 	async refreshToken(
 		@Body() token: string,

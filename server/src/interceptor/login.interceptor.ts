@@ -17,7 +17,7 @@ export function RequireLogin(): ClassDecorator &
 }
 export interface LoginInfo {
 	username: string;
-	uid: string;
+	uid: number;
 }
 // @side-only server
 export function createLoginInterceptor(
@@ -51,7 +51,7 @@ export function createLoginInterceptor(
 		});
 		if (shouldLogin && !prop.context.user) {
 			return new LocationTo(
-				`/login?from=${encodeURIComponent(prop.url.pathname + prop.url.search + prop.url.hash)}`,
+				`${prop.context.prefix}login?from=${encodeURIComponent(prop.url.pathname + prop.url.search + prop.url.hash)}`,
 			);
 		}
 		return next(prop);

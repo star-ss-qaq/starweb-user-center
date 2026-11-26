@@ -4,7 +4,7 @@ import { users } from "./users";
 import { tokens } from "./tokens";
 
 export const db = SFSideSwitch({
-	server: await SFDB.create(
+	server: new SFDB(
 		{
 			database: {
 				default: {
@@ -16,7 +16,10 @@ export const db = SFSideSwitch({
 			},
 			defaultDatabase: "default" as const,
 		},
-		{ type: "sqlite", file: join(process.cwd(), "./db.sqlite") },
+		{
+			type: "sqlite",
+			file: process.env.SQLITE_FILE || join(process.cwd(), "./db.sqlite"),
+		},
 	),
 })!;
 if (process.env.NODE_ENV === "development") {

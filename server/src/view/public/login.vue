@@ -4,7 +4,7 @@
 		<Input v-model="data.username" placeholder="用户名" />
 		<Input v-model="data.password" placeholder="密码" type="password" />
 		<Button theme="primary" @click="handleLogin">登录</Button>
-		<Button href="/register">注册</Button>
+		<Button :href="`${prefix}register`">注册</Button>
 	</div>
 	<footer>
 		<Version />
@@ -17,17 +17,19 @@ import { authTokenKey, refreshTokenKey } from "@/const/keys";
 import { LoginInfo } from "@/interceptor/login.interceptor";
 import { LoginMode } from "@/service/login.service";
 import { parseJWT } from "@/utils/parse-jwt";
-import { useRequest } from "@thestarweb/star-framework-app-web-vue";
+import { usePrefix, useRequest } from "@thestarweb/star-framework-app-web-vue";
 import { Button, Input } from "@thestarweb/ui";
 import Cookies from "js-cookie";
 import { inject, reactive, Ref, ref, watch } from "vue";
 
 const user = inject<Ref<LoginInfo>>("user");
+const prefix = usePrefix();
 watch(
 	() => user,
 	() => {
 		if (user?.value) {
-			const to = new URL(location.href).searchParams.get("from") || "/home";
+			const to =
+				new URL(location.href).searchParams.get("from") || `${prefix}home`;
 			if (to.startsWith("/")) {
 				history.pushState(null, "", to);
 			} else {

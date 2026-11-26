@@ -1,7 +1,7 @@
 {
 	"name": "@thestarweb/star-web-user-center",
 	"version": "1.0.0",
-	"description": "Node框架",
+	"description": "星星站点用户中心",
 	"main": "index.js",
 	"type": "module",
 	"scripts": {

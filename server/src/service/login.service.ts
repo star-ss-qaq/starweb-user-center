@@ -89,7 +89,7 @@ export class LoginService {
 			const ret = jwt.verify(token, defaultKey, {
 				ignoreExpiration: true,
 			}) as JwtPayload;
-			if (ret.exp! < Date.now()) {
+			if (ret.exp! * 1000 < Date.now()) {
 				let { authToken } = ret;
 				const res = await db
 					.select("tokens")
@@ -102,15 +102,16 @@ export class LoginService {
 					.one();
 				if (!res) return null;
 				const { uid, username, ip: lastIP } = res;
-				if (ip && ip !== lastIP) {
-					console.log("ip变更，更新token");
-					const newToken = this.createAuthToken();
-					await db
-						.update("tokens")
-						.set({ ip, authToken: newToken })
-						.where("authToken", authToken);
-					authToken = newToken;
-				}
+				// TODO 完善IP检测等机制
+				// if (ip && ip !== lastIP) {
+				// 	console.log("ip变更，更新token");
+				// 	const newToken = this.createAuthToken();
+				// 	await db
+				// 		.update("tokens")
+				// 		.set({ ip, authToken: newToken })
+				// 		.where("authToken", authToken);
+				// 	authToken = newToken;
+				// }
 				return {
 					uid,
 					username,
