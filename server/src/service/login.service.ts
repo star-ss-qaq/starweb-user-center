@@ -1,5 +1,6 @@
 import { db } from "@/database";
 import { tokens } from "@/database/tokens";
+import { Or } from "@thestarweb/star-framework-db";
 import { createHash } from "crypto";
 import jwt, { JwtPayload } from "jsonwebtoken";
 
@@ -61,6 +62,21 @@ export class LoginService {
 		});
 	}
 	async login(prop: LoginProp) {
+		// 登录速率限制
+		await db
+			.delete("loginLimit")
+			.where("time", "<", Date.now() / 1000 - 5 * 60);
+		const { count } = await db
+			.select("loginLimit")
+			.count("*", "count")
+			.where(Or({ ip: prop.ip }, { id: prop.username }))
+			.one();
+		if (count >= 5) {
+			throw new Error("短时间内尝试次数过多");
+		}
+		await db
+			.insert("loginLimit")
+			.data({ ip: prop.ip, id: prop.username, time: new Date() });
 		const { uid, username, success } = await this.checkPassword(prop);
 		if (success) {
 			const authToken = this.createAuthToken();
