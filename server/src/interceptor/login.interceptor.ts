@@ -6,15 +6,8 @@ import {
 } from "@thestarweb/star-framework-app-web";
 import { getMetadata, initMetadata } from "@thestarweb/star-framework-utils";
 import { setCookie } from "./cookie.interceptor";
+import { checkShouldLogin } from "@thestarweb/star-web-user-center-sdk";
 
-const metaKey = Symbol();
-export function RequireLogin(): ClassDecorator &
-	MethodDecorator &
-	PropertyDecorator {
-	return function (target: object, key?: PropertyKey) {
-		initMetadata(target, metaKey, key, []);
-	};
-}
 export interface LoginInfo {
 	username: string;
 	uid: number;
@@ -38,17 +31,7 @@ export function createLoginInterceptor(
 				}
 			}
 		}
-		let shouldLogin = false;
-		prop.route.allRoute.forEach((r) => {
-			const classMeta = getMetadata(r.obj, metaKey, undefined, undefined);
-			if (classMeta) {
-				shouldLogin = true;
-			}
-			const keyMeta = getMetadata(r.obj, metaKey, r.propertyKey, undefined);
-			if (keyMeta) {
-				shouldLogin = true;
-			}
-		});
+		let { shouldLogin, withPermission } = checkShouldLogin(prop.route);
 		if (shouldLogin && !prop.context.user) {
 			return new LocationTo(
 				`${prop.context.prefix}login?from=${encodeURIComponent(prop.url.pathname + prop.url.search + prop.url.hash)}`,

@@ -1,6 +1,6 @@
-import { RequireLogin } from "@/interceptor/login.interceptor";
 import { Layout, View } from "@thestarweb/star-framework-app-web";
 import { VueRender } from "@thestarweb/star-framework-app-web-vue";
+import { RequireLogin } from "@thestarweb/star-web-user-center-sdk";
 
 @Layout(new VueRender(() => import("@/view/home/layout.vue")))
 @RequireLogin()
