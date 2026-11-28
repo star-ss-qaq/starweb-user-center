@@ -52,7 +52,7 @@ declare module "@thestarweb/star-framework-app-web"{
 			"/check":{
 				prop:{
 				},
-				return:{"username": string,"uid": string,}
+				return:{"username": string,"uid": number,}
 			},
 		}
 	}
