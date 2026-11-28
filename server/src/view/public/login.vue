@@ -3,7 +3,9 @@
 		<h1>登录</h1>
 		<Input v-model="data.username" placeholder="用户名" />
 		<Input v-model="data.password" placeholder="密码" type="password" />
-		<Button theme="primary" @click="handleLogin">登录</Button>
+		<Button theme="primary" :loading="loading" @click="handleLogin">
+			登录
+		</Button>
 		<Button :href="`${prefix}register`">注册</Button>
 	</div>
 	<footer>
@@ -18,7 +20,7 @@ import { LoginInfo } from "@/interceptor/login.interceptor";
 import { LoginMode } from "@/service/login.service";
 import { parseJWT } from "@/utils/parse-jwt";
 import { usePrefix, useRequest } from "@thestarweb/star-framework-app-web-vue";
-import { Button, Input } from "@thestarweb/ui";
+import { Button, Input, notification } from "@thestarweb/ui";
 import Cookies from "js-cookie";
 import { inject, reactive, Ref, ref, watch } from "vue";
 
@@ -58,7 +60,23 @@ async function handleLogin() {
 			Cookies.set(authTokenKey, res.authToken);
 			localStorage.setItem(refreshTokenKey, res.refreshToken);
 			user!.value = parseJWT(authTokenKey);
+		} else {
+			notification({
+				theme: "danger",
+				title: "登录失败",
+				message: "登录信息有误，请重新输入",
+			});
 		}
+	} catch (e) {
+		notification({
+			theme: "warning",
+			title: "登录失败",
+			message:
+				e instanceof Error && e.message
+					? e.message
+					: "服务器响应异常，请稍后重试",
+		});
+		throw e;
 	} finally {
 		loading.value = false;
 	}

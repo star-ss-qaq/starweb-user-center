@@ -18,7 +18,7 @@
 		"@thestarweb/star-framework-db": "^1.2.1",
 		"@thestarweb/star-framework-di": "^1.0.3",
 		"@thestarweb/star-web-user-center-sdk": "^1.0.0-beta.1",
-		"@thestarweb/ui": "^2.0.0-beta.6",
+		"@thestarweb/ui": "^2.0.0-beta.7",
 		"@types/jsonwebtoken": "^9.0.10",
 		"cookie": "^2.0.2",
 		"dayjs": "^1.11.23",
