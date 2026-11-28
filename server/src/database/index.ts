@@ -3,6 +3,7 @@ import { SFDB } from "@thestarweb/star-framework-db";
 import { users } from "./users";
 import { tokens } from "./tokens";
 import { loginLimit } from "./login-limit";
+import { permission } from "./permission";
 
 export const db = SFSideSwitch({
 	server: new SFDB(
@@ -13,6 +14,7 @@ export const db = SFSideSwitch({
 						users,
 						tokens,
 						loginLimit,
+						permission,
 					},
 				},
 			},

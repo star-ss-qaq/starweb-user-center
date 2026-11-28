@@ -7,6 +7,7 @@ import {
 import { getMetadata, initMetadata } from "@thestarweb/star-framework-utils";
 import { setCookie } from "./cookie.interceptor";
 import { checkShouldLogin } from "@thestarweb/star-web-user-center-sdk";
+import { PermissionService } from "@/service/permission.service";
 
 export interface LoginInfo {
 	username: string;
@@ -15,6 +16,7 @@ export interface LoginInfo {
 // @side-only server
 export function createLoginInterceptor(
 	loginService: LoginService,
+	permissionService: PermissionService,
 ): Interceptor {
 	return async (prop, next) => {
 		if (prop.context.cookie?.token) {
@@ -36,6 +38,21 @@ export function createLoginInterceptor(
 			return new LocationTo(
 				`${prop.context.prefix}login?from=${encodeURIComponent(prop.url.pathname + prop.url.search + prop.url.hash)}`,
 			);
+		}
+		if (withPermission.length > 0) {
+			if (!prop.context.user) {
+				return new LocationTo(
+					`${prop.context.prefix}login?from=${encodeURIComponent(prop.url.pathname + prop.url.search + prop.url.hash)}`,
+				);
+			}
+			const res = await Promise.all(
+				withPermission.map((i) =>
+					permissionService.checkPermission(prop.context.user.uid, "sucs", i),
+				),
+			);
+			if (res.some((i) => !i)) {
+				throw new Error("权限不足");
+			}
 		}
 		return next(prop);
 	};

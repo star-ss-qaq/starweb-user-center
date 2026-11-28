@@ -12,14 +12,21 @@ import { createLoginInterceptor } from "@/interceptor/login.interceptor.js";
 import { LoginService } from "@/service/login.service.js";
 import { VueRender } from "@thestarweb/star-framework-app-web-vue";
 import Global from "@/view/global.vue";
+import { PermissionService } from "@/service/permission.service.js";
 
 @AddInterceptor([cookieInterceptor])
 @Layout(new VueRender(() => Global))
 export class Route {
-	constructor(private loginService: SFSideOnly<"server", LoginService>) {
+	constructor(
+		private loginService: SFSideOnly<"server", LoginService>,
+		private permissionService: SFSideOnly<"server", PermissionService>,
+	) {
 		SFSideSwitch({
 			server: addInterceptor(
-				[cookieInterceptor, createLoginInterceptor(this.loginService)],
+				[
+					cookieInterceptor,
+					createLoginInterceptor(this.loginService, permissionService),
+				],
 				this,
 			),
 		});
